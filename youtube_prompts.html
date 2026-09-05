@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Summary Prompts</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f4f6fb;
+      --surface:   #ffffff;
+      --surface2:  #f0f3fa;
+      --border:    #e2e8f0;
+      --text:      #1e293b;
+      --muted:     #64748b;
+      --accent:    #6366f1;
+      --accent-h:  #4f46e5;
+      --green:     #22c55e;
+      --red-badge: #ef4444;
+      --radius:    14px;
+      --shadow:    0 2px 16px rgba(99,102,241,.08);
+    }
+
+    [data-theme="dark"] {
+      --bg:       #0f1117;
+      --surface:  #1a1d2e;
+      --surface2: #12151f;
+      --border:   #2a2d3e;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --shadow:   0 2px 16px rgba(0,0,0,.4);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .25s, color .25s;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 12px; }
+
+    .logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 20px; flex-shrink: 0;
+    }
+
+    .header-title { font-size: 1.25rem; font-weight: 700; }
+    .header-sub   { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    /* search */
+    .search-wrap {
+      position: relative;
+    }
+    .search-wrap input {
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 12px 8px 34px;
+      font-size: .85rem;
+      width: 200px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-icon {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted); font-size: 14px; pointer-events: none;
+    }
+
+    /* theme toggle */
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text);
+      transition: background .2s;
+    }
+    .theme-btn:hover { background: var(--border); }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 900px;
+      margin: 40px auto 0;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 800; line-height: 1.2; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); margin-top: 10px; font-size: 1rem; max-width: 560px; margin-inline: auto; }
+
+    /* stat pills */
+    .stats { display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: .8rem;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .stat-pill strong { color: var(--text); }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      max-width: 960px;
+      margin: 28px auto 0;
+      padding: 0 20px;
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: .8rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      max-width: 960px;
+      margin: 24px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+      gap: 20px;
+    }
+
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .card:hover {
+      box-shadow: 0 8px 30px rgba(99,102,241,.15);
+      transform: translateY(-2px);
+    }
+    .card.hidden { display: none; }
+
+    /* ── Card: starred ── */
+    .card.starred {
+      border-color: var(--accent);
+    }
+
+    /* card top strip */
+    .card-strip {
+      height: 4px;
+    }
+
+    /* card header */
+    .card-head {
+      padding: 18px 20px 12px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    }
+
+    .card-num {
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .card-title { font-size: 1rem; font-weight: 700; margin-top: 2px; line-height: 1.3; }
+
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .badge {
+      font-size: .68rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .badge-cat  { background: #ede9fe; color: #5b21b6; }
+    .badge-rec  { background: #fef3c7; color: #92400e; }
+    .badge-star { background: #dcfce7; color: #166534; }
+
+    [data-theme="dark"] .badge-cat  { background: #2e1065; color: #c4b5fd; }
+    [data-theme="dark"] .badge-rec  { background: #451a03; color: #fde68a; }
+    [data-theme="dark"] .badge-star { background: #052e16; color: #86efac; }
+
+    /* card desc */
+    .card-desc {
+      padding: 0 20px 12px;
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* prompt block — code snippet style */
+    .prompt-block {
+      margin: 0 16px 8px;
+      background: #1e1e2e;
+      border: 1px solid #313244;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .prompt-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 8px 7px 14px;
+      background: #13131f;
+      border-bottom: 1px solid #313244;
+    }
+
+    .prompt-lang {
+      display: flex; align-items: center; gap: 7px;
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: #6272a4;
+    }
+    .prompt-lang::before {
+      content: ''; display: inline-block;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #6272a4; flex-shrink: 0;
+    }
+
+    /* ── Code snippet copy button ── */
+    .copy-icon-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: transparent; border: none;
+      cursor: pointer; padding: 4px 8px;
+      border-radius: 6px; color: #6e7a9a;
+      font-size: .72rem; font-family: inherit; font-weight: 500;
+      opacity: 0;
+      transition: opacity .15s, background .15s, color .15s;
+      user-select: none; white-space: nowrap;
+    }
+    .prompt-block:hover .copy-icon-btn { opacity: 1; }
+    .copy-icon-btn:hover { background: rgba(255,255,255,.08); color: #cdd6f4; }
+    .copy-icon-btn.copied { color: #a6e3a1 !important; opacity: 1 !important; }
+    .copy-icon-btn svg {
+      width: 13px; height: 13px; flex-shrink: 0;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .prompt-text {
+      white-space: pre-wrap;
+      font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+      font-size: .78rem; line-height: 1.68;
+      color: #cdd6f4; padding: 14px 16px;
+      max-height: 280px; overflow-y: auto;
+    }
+    .prompt-text::-webkit-scrollbar { width: 4px; }
+    .prompt-text::-webkit-scrollbar-track { background: transparent; }
+    .prompt-text::-webkit-scrollbar-thumb { background: #313244; border-radius: 4px; }
+
+    /* card footer */
+    .card-foot {
+      padding: 10px 16px 14px;
+      display: flex; gap: 8px;
+    }
+
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 7px 14px; border-radius: 8px;
+      font-size: .78rem; font-weight: 600;
+      cursor: pointer; border: none; transition: all .2s;
+    }
+
+    .btn-expand {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-expand:hover { background: var(--border); color: var(--text); }
+
+    /* ── Master card (full-width) ── */
+    .card.master {
+      grid-column: 1 / -1;
+      border-color: var(--accent);
+    }
+    .card.master .card-title { font-size: 1.15rem; }
+    .card.master .prompt-text { max-height: 400px; }
+
+    /* ── No results ── */
+    #no-results {
+      grid-column: 1/-1;
+      text-align: center;
+      color: var(--muted);
+      padding: 60px 0;
+      font-size: .95rem;
+      display: none;
+    }
+    #no-results.show { display: block; }
+
+    /* ── Expand overlay ── */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+    .overlay-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 760px;
+      width: 100%;
+      margin-top: 40px;
+      overflow: hidden;
+    }
+    .overlay-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .overlay-title { font-weight: 700; font-size: 1.05rem; }
+    .close-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: .85rem;
+      color: var(--text);
+    }
+    .overlay-prompt {
+      white-space: pre-wrap;
+      font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+      font-size: .82rem; line-height: 1.7;
+      color: #cdd6f4; background: #1e1e2e;
+      padding: 22px; max-height: 70vh; overflow-y: auto;
+    }
+    .overlay-prompt::-webkit-scrollbar { width: 4px; }
+    .overlay-prompt::-webkit-scrollbar-thumb { background: #313244; border-radius: 4px; }
+    /* overlay copy-icon uses same .copy-icon-btn but always visible */
+    .overlay-copy-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.06); border: 1px solid #313244;
+      cursor: pointer; padding: 6px 12px;
+      border-radius: 7px; color: #8892b0;
+      font-size: .78rem; font-family: inherit; font-weight: 500;
+      transition: background .15s, color .15s;
+      user-select: none; white-space: nowrap;
+    }
+    .overlay-copy-btn:hover { background: rgba(255,255,255,.12); color: #cdd6f4; }
+    .overlay-copy-btn.copied { color: #a6e3a1 !important; border-color: #a6e3a1; }
+    .overlay-copy-btn svg {
+      width: 14px; height: 14px; flex-shrink: 0;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-left">
+    <div class="logo">▶</div>
+    <div>
+      <div class="header-title">YouTube Summary Prompts</div>
+      <div class="header-sub">16 ready-to-copy prompts for any video</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="Search prompts…" />
+    </div>
+    <button class="theme-btn" id="themeBtn" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <h1>Every YouTube prompt you'll <span>ever need</span></h1>
+  <p>Click any card to copy the prompt. Paste it into YouTube Ask AI, ChatGPT, Claude, or Gemini to instantly learn any video.</p>
+  <div class="stats">
+    <div class="stat-pill">📋 <strong>16</strong> prompts</div>
+    <div class="stat-pill">⚡ <strong>4</strong> recommended</div>
+    <div class="stat-pill">📂 <strong>6</strong> categories</div>
+  </div>
+</section>
+
+<!-- ── FILTER BAR ── -->
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="quick">⚡ Quick</button>
+  <button class="filter-btn" data-filter="learn">🧠 Learn</button>
+  <button class="filter-btn" data-filter="deep">📚 Deep</button>
+  <button class="filter-btn" data-filter="technical">🔧 Technical</button>
+  <button class="filter-btn" data-filter="analysis">🔍 Analysis</button>
+  <button class="filter-btn" data-filter="recommended">⭐ Recommended</button>
+</div>
+
+<!-- ── PROMPT GRID ── -->
+<div class="grid" id="grid">
+
+  <!-- 1 -->
+  <div class="card" data-tags="quick">
+    <div class="card-strip" style="background:linear-gradient(90deg,#f97316,#ef4444)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 01</div>
+        <div class="card-title">⚡ Quick TL;DR</div>
+        <div class="badges">
+          <span class="badge badge-cat">Quick</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Best when you need the core idea in under a minute. Use this before deciding whether to watch a video.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-1', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-1">Give me a quick understanding of this video.
+
+Don't describe the video or tell me what the speaker did. Instead, explain the actual ideas from the video directly.
+
+Use simple, everyday language.
+
+Give me:
+
+The Big Idea
+Explain the main idea in 3–5 sentences.
+
+The Important Points
+List the 5 most important ideas I should know.
+
+The Takeaway
+Tell me the one thing I should remember.
+
+Ignore greetings, introductions, sponsorships, filler, repetition, and promotional content.
+
+Keep it short and easy to understand.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-1','⚡ Quick TL;DR')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card" data-tags="quick learn">
+    <div class="card-strip" style="background:linear-gradient(90deg,#3b82f6,#6366f1)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 02</div>
+        <div class="card-title">📝 Simple Summary</div>
+        <div class="badges">
+          <span class="badge badge-cat">Quick</span>
+          <span class="badge badge-cat">Learn</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">A slightly deeper version of TL;DR. Explains each idea with why it matters and connects them together.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-2', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-2">Explain this video to me in simple language.
+
+Don't give me a report about the video.
+
+Instead, teach me the actual ideas being discussed.
+
+Start with the big picture, then explain the important ideas one by one.
+
+For each important idea, tell me:
+
+What it means
+Why it matters
+How it works
+A useful example from the video
+
+Show me how the ideas connect with each other.
+
+Finish with the most important things I should remember.
+
+Do not use phrases like:
+
+"In this video..."
+"The speaker explains..."
+"The creator talks about..."
+
+Explain the subject directly.
+
+Remove filler, repetition, greetings, sponsorships, and promotional content.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-2','📝 Simple Summary')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card" data-tags="learn recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#22c55e,#16a34a)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 03</div>
+        <div class="card-title">🧠 Teach Me</div>
+        <div class="badges">
+          <span class="badge badge-cat">Learn</span>
+          <span class="badge badge-star">⭐ Recommended</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">One of the strongest general-purpose prompts. Starts from basics, builds up, and explains reasoning — not just what was said.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-3', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-3">Teach me the subject covered in this video.
+
+Assume I have not watched the video and may be new to the topic.
+
+Start with the basic idea and slowly build toward the more advanced ideas.
+
+Explain things in the order that makes them easiest to understand.
+
+For every important concept:
+
+Explain it in simple language
+Explain why it is needed
+Explain how it works
+Give the example used in the video
+Connect it to what we just learned
+
+Don't just tell me what was said.
+
+Help me actually understand it.
+
+Use simple words and short explanations. Explain technical terms when they first appear.
+
+At the end, give me:
+
+The big picture
+The 5–10 most important ideas
+What I should remember
+
+Avoid phrases like "the speaker says" or "the video explains."
+
+Teach me the subject directly.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-3','🧠 Teach Me')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card" data-tags="deep recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#8b5cf6,#6366f1)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 04</div>
+        <div class="card-title">📺 Learn Without Watching</div>
+        <div class="badges">
+          <span class="badge badge-cat">Deep</span>
+          <span class="badge badge-star">⭐ Recommended</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">The "replace watching" prompt. Ideal for long videos — preserves the full logical flow so you get the same understanding as watching it.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-4', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-4">Help me understand this video without having to watch the entire thing.
+
+Turn the important content into a clear, easy-to-read explanation.
+
+I want to understand:
+
+What problem is being discussed
+Why the problem matters
+The important ideas
+How those ideas work
+Why the suggested approach makes sense
+Examples used to explain the ideas
+Important trade-offs or limitations
+The final conclusion
+
+Keep the logical flow of the original discussion.
+
+Don't write a report about the video.
+
+Instead, explain the subject directly, as if you are teaching me.
+
+Keep important details and context, but remove:
+
+Filler
+Repetition
+Greetings
+Sponsorships
+Advertisements
+Unrelated discussion
+
+The final result should give me the same important understanding I would get from watching the video.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-4','📺 Learn Without Watching')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card" data-tags="deep learn recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#f59e0b,#f97316)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 05</div>
+        <div class="card-title">🗺️ Mental Model</div>
+        <div class="badges">
+          <span class="badge badge-cat">Deep</span>
+          <span class="badge badge-star">⭐ Recommended</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">For understanding how ideas connect, not just what they are. Excellent for technical, conceptual, or architecture videos.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-5', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-5">Help me build a clear mental model of the subject in this video.
+
+Don't just list the points.
+
+Show me how the ideas connect.
+
+Explain:
+
+The Problem
+What are we trying to solve?
+
+The Core Idea
+What is the main idea?
+
+The Important Pieces
+What are the important concepts or components?
+
+How They Connect
+Explain how the pieces work together.
+
+Cause and Effect
+Explain what causes what and why.
+
+Trade-offs
+What do we gain and what do we give up?
+
+Examples
+Use the examples from the video to make the ideas easier to understand.
+
+The Complete Picture
+Bring everything together into one simple mental model.
+
+Use simple language.
+
+The goal is that I can close the answer and explain the topic in my own words.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-5','🗺️ Mental Model')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card" data-tags="deep">
+    <div class="card-strip" style="background:linear-gradient(90deg,#06b6d4,#3b82f6)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 06</div>
+        <div class="card-title">📚 Study Notes</div>
+        <div class="badges">
+          <span class="badge badge-cat">Deep</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Creates notes you can save in your knowledge base and understand months later — no video needed.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-6', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-6">Turn this video into useful study notes.
+
+Write the notes so that I can come back to them months later and still understand the topic without watching the video again.
+
+Use this structure:
+
+Overview
+Explain the big picture.
+
+Key Concepts
+Explain the important concepts in simple language.
+
+Detailed Explanation
+Walk through the important ideas and reasoning.
+
+Examples
+Include useful examples and analogies.
+
+Important Distinctions
+Point out things that are easy to confuse.
+
+Practical Applications
+Explain where the ideas can be useful.
+
+Mistakes and Misconceptions
+Include important mistakes or misconceptions discussed.
+
+Key Takeaways
+Give me the most important lessons.
+
+Don't describe the video.
+
+Teach me the subject directly.
+
+Remove filler and repetition, but keep important context.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-6','📚 Study Notes')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card" data-tags="deep">
+    <div class="card-strip" style="background:linear-gradient(90deg,#ec4899,#f43f5e)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 07</div>
+        <div class="card-title">🗂️ Chapter by Chapter</div>
+        <div class="badges">
+          <span class="badge badge-cat">Deep</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Excellent for long videos. Breaks it into logical chapters and teaches the content of each one with context intact.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-7', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-7">Break this video into clear logical chapters and teach me the content of each chapter.
+
+Don't simply tell me what happens in each part.
+
+Explain the actual ideas being taught.
+
+For every chapter:
+
+[Chapter Name]
+
+Explain:
+
+What we are trying to understand
+The important concepts
+The reasoning
+Examples
+Important details
+How this connects to the previous chapter
+
+If timestamps are available, include them.
+
+Start with a short overview of the whole topic.
+
+At the end, explain how all the chapters connect to form the complete picture.
+
+Use simple language and remove filler, repetition, sponsorships, and unrelated discussion.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-7','🗂️ Chapter by Chapter')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="card" data-tags="analysis">
+    <div class="card-strip" style="background:linear-gradient(90deg,#64748b,#475569)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 08</div>
+        <div class="card-title">🔍 Critical Analysis</div>
+        <div class="badges">
+          <span class="badge badge-cat">Analysis</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Goes beyond summarizing — explains the content first, then critically examines the claims, assumptions, and weaknesses.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-8', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-8">First, help me understand the ideas presented in this video.
+
+Explain the ideas directly and clearly, without describing what the speaker is doing.
+
+Once the explanation is complete, analyze the ideas critically.
+
+Main Ideas
+What are the important ideas?
+
+Reasoning
+Why do these ideas make sense?
+
+Evidence
+What evidence or examples support them?
+
+Assumptions
+What assumptions are being made?
+
+Strengths
+What is convincing?
+
+Weaknesses
+What may be incomplete, unclear, or questionable?
+
+Alternative Views
+Are there other reasonable ways to look at the topic?
+
+Things to Verify
+Which claims would be worth checking independently?
+
+Clearly separate the explanation of the video's content from the critical analysis.
+
+Do not change the meaning of the original ideas.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-8','🔍 Critical Analysis')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="card" data-tags="quick learn">
+    <div class="card-strip" style="background:linear-gradient(90deg,#10b981,#059669)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 09</div>
+        <div class="card-title">✅ Actionable Summary</div>
+        <div class="badges">
+          <span class="badge badge-cat">Quick</span>
+          <span class="badge badge-cat">Learn</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">For productivity, business, self-improvement, and tutorial videos. Focuses on what you can actually do with the knowledge.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-9', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-9">Turn the useful ideas from this video into practical actions.
+
+First, explain the main idea in simple language.
+
+Then organize the useful information into:
+
+What Matters
+What are the most important ideas?
+
+What Should I Do?
+Turn the recommendations into clear actions.
+
+For each action explain:
+
+What to do
+Why it matters
+How to do it
+When it is useful
+
+Examples
+Show how these ideas can be applied using examples from the video.
+
+Mistakes to Avoid
+Explain the mistakes or wrong approaches discussed.
+
+Key Takeaways
+Give me the most important things to remember.
+
+Do not describe the video.
+
+Teach me the ideas directly.
+
+Only include recommendations that come from the video or are clearly supported by it.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-9','✅ Actionable Summary')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="card" data-tags="learn recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#f59e0b,#eab308)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 10</div>
+        <div class="card-title">💬 Question &amp; Answer</div>
+        <div class="badges">
+          <span class="badge badge-cat">Learn</span>
+          <span class="badge badge-star">⭐ Recommended</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Organizes the video around natural questions. Great format for complicated videos — feels like a conversation, not a report.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-10', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-10">Turn the important ideas from this video into questions and answers.
+
+The questions should be natural questions that someone learning this topic would actually ask.
+
+Start with:
+
+The Big Picture
+Give me a short explanation of the main idea.
+
+Then create:
+
+Q: [Question]
+
+Answer
+Explain the answer simply.
+
+Why?
+Explain the reasoning.
+
+Example
+Give the relevant example from the video.
+
+Remember
+Give me the key point in one sentence.
+
+Arrange the questions in a logical order so that each answer prepares me for the next question.
+
+Finish with:
+
+The 5 Things I Should Remember
+
+Don't create unnecessary questions just to make the answer longer.
+
+The goal is to make a complicated topic feel like a simple conversation.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-10','💬 Question & Answer')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="card" data-tags="learn deep">
+    <div class="card-strip" style="background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 11</div>
+        <div class="card-title">📊 Three Levels of Understanding</div>
+        <div class="badges">
+          <span class="badge badge-cat">Learn</span>
+          <span class="badge badge-cat">Deep</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">One prompt, three depths — 30 seconds, 5 minutes, full understanding. You choose how deep to go after seeing each level.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-11', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-11">Explain this video at three levels.
+
+Level 1 — 30 Seconds
+Give me the core idea in 3–5 sentences.
+
+Level 2 — 5 Minutes
+Explain the main concepts, reasoning, examples, and conclusions.
+
+Level 3 — Full Understanding
+Give me a complete explanation.
+
+Include:
+
+Background
+Important concepts
+Examples
+Reasoning
+Connections
+Trade-offs
+Limitations
+Important details
+Final conclusions
+
+Keep all three levels consistent.
+
+Level 2 should add detail to Level 1.
+
+Level 3 should build on Level 2.
+
+Don't describe the video.
+
+Teach me the subject directly.
+
+Use simple language throughout.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-11','📊 Three Levels of Understanding')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div class="card" data-tags="learn">
+    <div class="card-strip" style="background:linear-gradient(90deg,#84cc16,#22c55e)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 12</div>
+        <div class="card-title">🌱 Beginner Mode</div>
+        <div class="badges">
+          <span class="badge badge-cat">Learn</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Great when the video assumes too much knowledge. Starts from zero, builds up, explains every term without dumbing it down.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-12', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-12">Teach me the subject of this video as if I am completely new to it.
+
+Assume I am intelligent but have no background knowledge.
+
+Start with the simplest idea.
+
+Then gradually build toward the more advanced concepts.
+
+Whenever you introduce:
+
+A technical term
+An acronym
+A new concept
+An assumption
+
+explain it in simple language first.
+
+Use examples and analogies when they make the idea easier to understand.
+
+Don't oversimplify important technical details.
+
+The goal is:
+
+"After reading this, I should understand the topic well enough to explain it to another person."
+
+Don't summarize what the speaker said.
+
+Actually teach me what I need to understand.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-12','🌱 Beginner Mode')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 13 -->
+  <div class="card" data-tags="analysis deep">
+    <div class="card-strip" style="background:linear-gradient(90deg,#0ea5e9,#06b6d4)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 13</div>
+        <div class="card-title">🗃️ Extract the Knowledge</div>
+        <div class="badges">
+          <span class="badge badge-cat">Analysis</span>
+          <span class="badge badge-cat">Deep</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Treats the video like a structured knowledge source. Separates facts, opinions, principles, arguments, and recommendations cleanly.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-13', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-13">Extract the useful knowledge from this video and organize it so I can learn it easily.
+
+Separate it into:
+
+Concepts
+What concepts do I need to understand?
+
+Facts
+What important facts or information should I know?
+
+Principles
+What general principles can I take away?
+
+Examples
+What examples make the concepts easier to understand?
+
+Arguments
+What reasoning is being used?
+
+Opinions
+Which ideas are opinions or personal interpretations?
+
+Recommendations
+What actions or approaches are recommended?
+
+Conclusions
+What should I understand after putting everything together?
+
+Keep facts, opinions, and interpretations separate.
+
+Don't describe what happened in the video.
+
+Explain the knowledge directly.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-13','🗃️ Extract the Knowledge')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 14 -->
+  <div class="card" data-tags="analysis deep">
+    <div class="card-strip" style="background:linear-gradient(90deg,#a855f7,#ec4899)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 14</div>
+        <div class="card-title">🕸️ Connect the Ideas</div>
+        <div class="badges">
+          <span class="badge badge-cat">Analysis</span>
+          <span class="badge badge-cat">Deep</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Maps relationships between concepts — cause/effect, problem/solution, trade-offs, dependencies. Builds one connected picture.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-14', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-14">Help me understand how the important ideas in this video connect to each other.
+
+Don't just give me a list.
+
+Build one connected explanation.
+
+Show me relationships such as:
+
+Problem → Solution
+Cause → Effect
+Concept → Example
+Component → Responsibility
+Decision → Reason
+Benefit → Trade-off
+Dependency → Result
+
+For example, explain relationships naturally:
+
+"Because X creates this problem, we use Y. Y solves that problem by doing Z. However, this introduces another trade-off..."
+
+Start with the core problem and gradually build the complete picture.
+
+Use simple language.
+
+The goal is for me to finish with a clear mental map of the subject.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-14','🕸️ Connect the Ideas')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 15 -->
+  <div class="card" data-tags="technical recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#14b8a6,#0ea5e9)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 15</div>
+        <div class="card-title">🔧 Technical / Engineering</div>
+        <div class="badges">
+          <span class="badge badge-cat">Technical</span>
+          <span class="badge badge-star">⭐ Recommended</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Specialized for architecture, system design, APIs, data flows, queues, databases, and engineering videos. Covers everything a dev needs.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-15', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-15">Teach me the technical subject covered in this video.
+
+I want to understand the system, not just get a summary.
+
+Use simple language but keep the important technical details.
+
+1. The Big Picture
+What are we trying to build or solve?
+
+2. The Problem
+Why does this problem exist?
+
+3. Architecture
+What are the main components?
+What is each component responsible for?
+How do they connect?
+
+4. End-to-End Flow
+Walk me through what happens step by step.
+
+5. APIs
+If APIs are discussed, explain:
+Who calls the API
+Which endpoint is called
+What request is sent
+What response comes back
+Why the API is needed
+
+6. Data Flow
+Explain how data moves through the system.
+
+7. Messaging
+If queues, topics, events, or messaging are discussed, explain:
+Who publishes
+What is published
+Who consumes it
+Why messaging is used
+What happens afterward
+
+8. Database / Cache / Storage
+Explain how each one is used and why.
+
+9. Design Decisions
+Explain why the system is designed this way.
+
+10. Trade-offs
+Explain what we gain and what we sacrifice.
+
+11. Examples
+Include useful examples from the video.
+
+12. Complete Picture
+Bring everything together into one end-to-end explanation.
+
+13. Key Takeaways
+Give me the most important technical lessons.
+
+Don't say "the speaker explains" or "the video discusses."
+
+Teach me the technical subject directly.
+
+Don't invent technical details that aren't present in the video.
+
+If something isn't clear from the video, say that it isn't clear.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-15','🔧 Technical / Engineering')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 16 — Master (full width) -->
+  <div class="card master starred" data-tags="learn deep technical recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#6366f1,#8b5cf6,#ec4899)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 16 · Master</div>
+        <div class="card-title">⭐ Master Prompt — Use This as Your Default</div>
+        <div class="badges">
+          <span class="badge badge-cat">Learn</span>
+          <span class="badge badge-cat">Deep</span>
+          <span class="badge badge-cat">Technical</span>
+          <span class="badge badge-star">⭐ Best Overall</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Combines every important element into one reusable prompt. Works for any video type. Use this when you don't want to pick a specific mode — it handles everything from basics to reasoning to trade-offs and practical takeaways.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-16', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-16">Help me learn the subject of this video.
+
+I don't want a report about the video.
+
+Instead, turn the important content into a clear explanation that feels like I am learning the topic directly from the person who made the video.
+
+Don't say:
+
+"In this video..."
+"The speaker explains..."
+"The creator discusses..."
+"The video talks about..."
+
+Explain the actual ideas directly.
+
+Use simple, natural language.
+
+Start With the Big Picture
+
+First help me understand:
+
+What is the main topic?
+What problem are we trying to solve?
+Why does it matter?
+
+Build the Understanding
+
+Start from the basics and gradually move toward the more advanced ideas.
+
+For each important idea:
+
+What is it?
+Why do we need it?
+How does it work?
+Why does it matter?
+What example helps explain it?
+
+Connect each idea to the previous one so the explanation feels like one continuous lesson.
+
+Explain the Reasoning
+
+Don't just tell me what the solution or idea is.
+
+Explain why it makes sense.
+
+Help me understand the thinking behind important decisions, approaches, and conclusions.
+
+Use Examples
+
+Keep the useful examples, stories, analogies, demonstrations, and real-world situations from the video.
+
+Use them where they make the explanation easier to understand.
+
+Keep Important Details
+
+Don't remove details that are important for understanding.
+
+Keep things such as:
+
+Important facts
+Numbers
+Technical details
+Comparisons
+Assumptions
+Trade-offs
+Limitations
+Exceptions
+Important distinctions
+
+Connect Everything
+
+After explaining the individual ideas, show me how everything fits together.
+
+I want a connected mental model, not a list of disconnected points.
+
+Final Takeaways
+
+End with:
+
+The 5–10 Things I Should Remember
+
+Then give me:
+
+One-Minute Recall
+
+A short explanation that lets me quickly remember the whole topic later.
+
+Writing Style
+
+Use:
+
+Simple English
+Conversational language
+Short paragraphs
+Clear headings
+Examples
+Analogies when useful
+Bullets when useful
+
+Avoid:
+
+Formal academic language
+Unnecessary jargon
+Repetition
+Filler
+Long complicated sentences
+
+Important
+
+Stay faithful to the information in the video.
+
+Don't invent information.
+
+Don't change the meaning of the ideas.
+
+If something is unclear or missing, say so instead of guessing.
+
+Ignore greetings, filler, sponsorships, advertisements, repetition, and unrelated discussion.
+
+The goal is simple:
+
+When I finish reading your answer, I should feel that I actually learned the video rather than simply reading a summary of it.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-16','⭐ Master Prompt')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <div id="no-results">No prompts match your search. Try a different keyword.</div>
+</div>
+
+<!-- ── EXPAND OVERLAY ── -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="overlay-box" onclick="event.stopPropagation()">
+    <div class="overlay-head">
+      <div class="overlay-title" id="overlay-title"></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="overlay-copy-btn" id="overlay-copy-btn" onclick="copyFromOverlay(this)" title="Copy prompt">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+        <button class="close-btn" onclick="closeOverlay()">✕ Close</button>
+      </div>
+    </div>
+    <div class="overlay-prompt" id="overlay-prompt"></div>
+  </div>
+</div>
+
+<script>
+  /* ── Theme ── */
+  const themeBtn = document.getElementById('themeBtn');
+  let dark = false;
+  themeBtn.addEventListener('click', () => {
+    dark = !dark;
+    document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+    themeBtn.textContent = dark ? '☀️' : '🌙';
+  });
+
+  /* ── Code-snippet copy ── */
+  function copySnippet(id, btn) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const ic = btn.querySelector('.icon-copy');
+      const ik = btn.querySelector('.icon-check');
+      const lb = btn.querySelector('.copy-label');
+      ic.style.display = 'none'; ik.style.display = ''; lb.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        ic.style.display = ''; ik.style.display = 'none'; lb.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  /* ── Expand Overlay ── */
+  let overlayText = '';
+  function expandPrompt(id, title) {
+    overlayText = document.getElementById(id).textContent;
+    document.getElementById('overlay-title').textContent = title;
+    document.getElementById('overlay-prompt').textContent = overlayText;
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeOverlay(e) {
+    if (!e || e.target === document.getElementById('overlay'))
+      document.getElementById('overlay').classList.remove('open');
+  }
+  function copyFromOverlay(btn) {
+    navigator.clipboard.writeText(overlayText).then(() => {
+      const ic = btn.querySelector('.icon-copy');
+      const ik = btn.querySelector('.icon-check');
+      const lb = btn.querySelector('.copy-label');
+      ic.style.display = 'none'; ik.style.display = ''; lb.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        ic.style.display = ''; ik.style.display = 'none'; lb.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open'); });
+
+  /* ── Filter ── */
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  let activeFilter = 'all';
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      applyFilters();
+    });
+  });
+
+  /* ── Search ── */
+  document.getElementById('search').addEventListener('input', applyFilters);
+
+  function applyFilters() {
+    const query = document.getElementById('search').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.card');
+    let visible = 0;
+    cards.forEach(card => {
+      const tags = card.dataset.tags || '';
+      const text = card.textContent.toLowerCase();
+      const matchFilter = activeFilter === 'all' || tags.includes(activeFilter);
+      const matchSearch = !query || text.includes(query);
+      if (matchFilter && matchSearch) { card.classList.remove('hidden'); visible++; }
+      else card.classList.add('hidden');
+    });
+    document.getElementById('no-results').classList.toggle('show', visible === 0);
+  }
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"f0f03d0605bf45f1a3b17cf7d5e6861f","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
