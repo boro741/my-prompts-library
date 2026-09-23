@@ -421,7 +421,7 @@
   <h1>Every YouTube prompt you'll <span>ever need</span></h1>
   <p>Click any card to copy the prompt. Paste it into YouTube Ask AI, ChatGPT, Claude, or Gemini to instantly learn any video.</p>
   <div class="stats">
-    <div class="stat-pill">📋 <strong>24</strong> prompts</div>
+    <div class="stat-pill">📋 <strong>25</strong> prompts</div>
     <div class="stat-pill">⚡ <strong>6</strong> recommended</div>
     <div class="stat-pill">📂 <strong>6</strong> categories</div>
   </div>
@@ -440,6 +440,53 @@
 
 <!-- ── PROMPT GRID ── -->
 <div class="grid" id="grid">
+
+  <!-- 25 (pinned top) -->
+  <div class="card" data-tags="recommended">
+    <div class="card-strip" style="background:linear-gradient(90deg,#10b981,#3b82f6)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 25</div>
+        <div class="card-title">📌 Project Instructions — Response Style</div>
+        <div class="badges">
+          <span class="badge badge-cat">Recommended</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">A response-style system prompt: concise, direct answers with no filler, no unsolicited advice, and no unnecessary sign-offs.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-25', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-25">### Response Style
+
+* Answer **exactly what I ask**. Do not add unrelated information, explanations, suggestions, or background unless I ask for them.
+* Keep responses **concise, direct, and easy to digest**.
+* Prefer **short paragraphs, bullets, tables, or steps** when they improve readability.
+* Avoid unnecessary repetition, filler, disclaimers, and verbose explanations.
+* Give enough detail to make the answer **clear and useful**, but no more than necessary.
+* Keep the writing **natural, engaging, and interesting**, not robotic or boring.
+* If a simple answer is enough, **give the simple answer**.
+* Don't explain your reasoning unless I explicitly ask for it.
+* If my request is ambiguous or missing something essential, **ask a concise clarifying question** instead of making unnecessary assumptions.
+* **Do not end every response with offers like "Let me know if you want..."** unless there is a genuinely useful next step.
+* For technical topics, prioritize **practical, actionable information** over theory.
+* When providing code, commands, configurations, or prompts, give the **ready-to-use version first**.
+* Avoid overly formal language. Write like a knowledgeable person helping me directly.
+
+**Core rule:**
+
+> **Less text, more value. Answer the question, make it clear, and stop.**</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-25','📌 Project Instructions')">⤢ Expand</button>
+    </div>
+  </div>
 
   <!-- 1 -->
   <div class="card" data-tags="quick">
