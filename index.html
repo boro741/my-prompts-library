@@ -404,7 +404,7 @@
     <div class="logo">▶</div>
     <div>
       <div class="header-title">YouTube Summary Prompts</div>
-      <div class="header-sub">24 ready-to-copy prompts for any video</div>
+      <div class="header-sub">25 ready-to-copy prompts for any video</div>
     </div>
   </div>
   <div class="header-right">
@@ -421,9 +421,9 @@
   <h1>Every YouTube prompt you'll <span>ever need</span></h1>
   <p>Click any card to copy the prompt. Paste it into YouTube Ask AI, ChatGPT, Claude, or Gemini to instantly learn any video.</p>
   <div class="stats">
-    <div class="stat-pill">📋 <strong>25</strong> prompts</div>
+    <div class="stat-pill">📋 <strong>26</strong> prompts</div>
     <div class="stat-pill">⚡ <strong>6</strong> recommended</div>
-    <div class="stat-pill">📂 <strong>6</strong> categories</div>
+    <div class="stat-pill">📂 <strong>7</strong> categories</div>
   </div>
 </section>
 
@@ -431,6 +431,7 @@
 <div class="filter-bar">
   <button class="filter-btn active" data-filter="all">All</button>
   <button class="filter-btn" data-filter="quick">⚡ Quick</button>
+  <button class="filter-btn" data-filter="watch-along">🎬 Watch Along</button>
   <button class="filter-btn" data-filter="learn">🧠 Learn</button>
   <button class="filter-btn" data-filter="deep">📚 Deep</button>
   <button class="filter-btn" data-filter="technical">🔧 Technical</button>
@@ -533,6 +534,47 @@ Keep it short and easy to understand.</div>
     </div>
     <div class="card-foot">
       <button class="btn btn-expand" onclick="expandPrompt('text-1','⚡ Quick TL;DR')">⤢ Expand</button>
+    </div>
+  </div>
+
+  <!-- 26 -->
+  <div class="card" data-tags="watch-along">
+    <div class="card-strip" style="background:linear-gradient(90deg,#8b5cf6,#ec4899)"></div>
+    <div class="card-head">
+      <div>
+        <div class="card-num">Prompt 26</div>
+        <div class="card-title">🎬 Watch Along — Timeline Explanation</div>
+        <div class="badges">
+          <span class="badge badge-cat">Watch Along</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">Read a quick TL;DR first, then follow a clear, timestamped explanation in the same order as the video.</div>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="prompt-lang">prompt</span>
+        <button class="copy-icon-btn" onclick="copySnippet('text-26', this)" title="Copy">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          <svg class="icon-check" viewBox="0 0 24 24" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <div class="prompt-text" id="text-26">Help me understand this video while I watch it.
+
+Start with a short TL;DR so I can get the main point without reading the full explanation.
+
+Then explain the important content in the same order it appears in the video. Organize the explanation into sections, each with a bold heading that includes its timestamp.
+
+For each section, explain the ideas clearly and directly so I can read it and follow along with that part of the video. Keep useful examples and explanations from the video where they help me understand.
+
+Use timestamps provided by the video or transcript. Do not invent timestamps. If timestamps are unavailable, keep the sections in video order and say that timestamps were not provided.
+
+Skip greetings, filler, repetition, sponsorships, and promotions unless they contain information needed to understand the topic. Do not merely describe what the speaker does; teach me the ideas themselves.
+
+Keep the TL;DR concise, and make the sections detailed enough to understand the important content.</div>
+    </div>
+    <div class="card-foot">
+      <button class="btn btn-expand" onclick="expandPrompt('text-26','🎬 Watch Along — Timeline Explanation')">⤢ Expand</button>
     </div>
   </div>
 
